@@ -8,10 +8,11 @@ try:
 except ImportError:
     from embed import MODEL_NAME, CHROMA_PATH, COLLECTION, _device
 
-def load_retriever() -> tuple[SentenceTransformer, chromadb.Collection]:
+
+def load_retriever(collection_name: str = COLLECTION) -> tuple[SentenceTransformer, chromadb.Collection]:
     model = SentenceTransformer(MODEL_NAME, device=_device())
     client = chromadb.PersistentClient(path=CHROMA_PATH)
-    collection = client.get_collection(name=COLLECTION)
+    collection = client.get_collection(name=collection_name)
     return model, collection
 
 
@@ -41,7 +42,7 @@ def retrieve(
             "end_line": meta["end_line"],
             "qualified_name": meta["qualified_name"],
             "kind": meta["kind"],
-            "score": round(1 - dist, 4),   # cosine distance → similarity
+            "score": round(1 - dist, 4),
             "code": doc,
         })
 

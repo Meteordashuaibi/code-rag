@@ -24,10 +24,10 @@ def load_model() -> SentenceTransformer:
     return SentenceTransformer(MODEL_NAME, device=device)
 
 
-def get_collection(chroma_path: str = CHROMA_PATH) -> chromadb.Collection:
+def get_collection(chroma_path: str = CHROMA_PATH, name: str = COLLECTION) -> chromadb.Collection:
     client = chromadb.PersistentClient(path=chroma_path)
     return client.get_or_create_collection(
-        name=COLLECTION,
+        name=name,
         metadata={"hnsw:space": "cosine"},
     )
 
@@ -66,7 +66,7 @@ def embed_and_store(
     )
 
 
-def index_repo(repo_root: Path, chroma_path: str = CHROMA_PATH) -> int:
+def index_repo(repo_root: Path, chroma_path: str = CHROMA_PATH, collection_name: str = COLLECTION) -> int:
     print(f"正在索引 repo: {repo_root.resolve()}")
     chunks = parse_repo(repo_root)
     if not chunks:
@@ -74,11 +74,11 @@ def index_repo(repo_root: Path, chroma_path: str = CHROMA_PATH) -> int:
         return 0
 
     model      = load_model()
-    collection = get_collection(chroma_path)
+    collection = get_collection(chroma_path, name=collection_name)
 
     print(f"embedding {len(chunks)} 个 chunk ...")
     embed_and_store(chunks, model, collection)
-    print(f"完成，已写入 ChromaDB ({len(chunks)} 个 chunk)")
+    print(f"完成，已写入 ChromaDB ({len(chunks)} 个 chunk，collection={collection_name})")
     return len(chunks)
 
 
